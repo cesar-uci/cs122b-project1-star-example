@@ -2,6 +2,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -28,11 +32,17 @@ public class StarServlet extends HttpServlet {
 
         out.println("<html>");
         out.println("<head><title>Fabflix</title></head>");
+        out.println("<body>");
 
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             // create database connection
-            Connection connection = DriverManager.getConnection(loginUrl, loginUser, loginPasswd);
+            //Connection connection = DriverManager.getConnection(loginUrl, loginUser, loginPasswd);
+            Context initCtx = new InitialContext();
+            Context envCtx = (Context) initCtx.lookup("java:comp/env");
+            DataSource dataSource = (DataSource) envCtx.lookup("jdbc/moviedb");
+            Connection connection = dataSource.getConnection();
+
             // declare statement
             Statement statement = connection.createStatement();
             // prepare query
