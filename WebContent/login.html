@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fabflix Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-wrapper">
+    <div class="login-card">
+        <h1>Fabflix</h1>
+
+        <div id="error" class="error"></div>
+
+        <form method="POST" action="login">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                >
+            </div>
+
+            <button type="submit" class="btn-primary">Log In</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'invalid') {
+        document.getElementById('error').textContent =
+            'Invalid email or password. Please try again.';
+    }
+</script>
+</body>
+</html>

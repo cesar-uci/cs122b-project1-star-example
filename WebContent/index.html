@@ -1,16 +1,70 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no"
-          name="viewport">
-    <title>fabflix</title>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    <title>Fabflix Main Page</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-<p>Project 1 Star Example Works</p>
-</body>
+<!-- overall page background -->
+<div class="page-bg">
+    <!-- top header -->
+    <header class="app-header">
+        <h1>Fabflix</h1>
+        <nav><a href="logout">Logout</a></nav>
+    </header>
 
+    <!-- card/container holds the form and lists -->
+    <main class="container card">
+        <!-- Search Section -->
+        <section id="search-section">
+            <h2>Search Movies</h2>
+            <form method="GET" action="movie-list.jsp" class="search-form">
+                <input type="text"  name="title"    placeholder="Title">
+                <input type="text"  name="year"     placeholder="Year">
+                <input type="text"  name="director" placeholder="Director">
+                <input type="text"  name="star"     placeholder="Star name">
+                <button type="submit">Search</button>
+            </form>
+        </section>
+
+        <!-- Browse by Genre -->
+        <section id="browse-genre">
+            <h2>Browse by Genre</h2>
+            <ul id="genre-list" class="button-list"></ul>
+        </section>
+
+        <!-- Browse by Title Initial -->
+        <section id="browse-letter">
+            <h2>Browse by Title</h2>
+            <ul id="alpha-list" class="button-list"></ul>
+        </section>
+    </main>
+</div>
+
+<script>
+    // fetch genres via AJAX
+    fetch('movie-list.jsp?fetchGenres=true')
+        .then(r => r.json())
+        .then(genres => {
+            const ul = document.getElementById('genre-list');
+            genres.forEach(g => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="movie-list.jsp?genre=${encodeURIComponent(g)}">${g}</a>`;
+                ul.appendChild(li);
+            });
+        });
+
+    // build 0–9, A–Z + "*" browse buttons
+    const alpha = ['*', ...'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
+    const alphaUl = document.getElementById('alpha-list');
+    alpha.forEach(ch => {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="movie-list.jsp?letter=${encodeURIComponent(ch)}">${ch}</a>`;
+        alphaUl.appendChild(li);
+    });
+</script>
+</body>
 </html>
