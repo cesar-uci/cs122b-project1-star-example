@@ -34,9 +34,9 @@ public class PlaceOrderServlet extends HttpServlet {
         }
 
         String firstName = req.getParameter("firstName");
-        String lastName  = req.getParameter("lastName");
-        String ccNumber  = req.getParameter("ccNumber");
-        String expMonth  = req.getParameter("expiration");
+        String lastName = req.getParameter("lastName");
+        String ccNumber = req.getParameter("ccNumber");
+        String expMonth = req.getParameter("expiration");
 
         YearMonth ym = YearMonth.parse(expMonth);
         LocalDate ld = ym.atEndOfMonth();
@@ -56,7 +56,7 @@ public class PlaceOrderServlet extends HttpServlet {
                     cardStmt.setString(1, ccNumber);
                     cardStmt.setString(2, firstName);
                     cardStmt.setString(3, lastName);
-                    cardStmt.setDate  (4, expiration);
+                    cardStmt.setDate (4, expiration);
 
                     try (ResultSet rc = cardStmt.executeQuery()) {
                         if (!rc.next()) {

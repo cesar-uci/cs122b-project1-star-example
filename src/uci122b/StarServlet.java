@@ -21,6 +21,7 @@ public class StarServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         HttpSession session = req.getSession(false);
+
         if (session == null || session.getAttribute("userEmail") == null) {
             resp.sendRedirect("login.html");
             return;
@@ -41,6 +42,7 @@ public class StarServlet extends HttpServlet {
                 }
                 out.println("</table></body></html>");
             }
+
         } catch (Exception e) {
             throw new IOException("Error retrieving stars", e);
         }

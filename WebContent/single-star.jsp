@@ -9,7 +9,7 @@
     }
 
     Context initCtx = new InitialContext();
-    DataSource ds   = (DataSource) initCtx.lookup("java:comp/env/jdbc/moviedb");
+    DataSource ds = (DataSource) initCtx.lookup("java:comp/env/jdbc/moviedb");
     Connection conn = ds.getConnection();
 
     String name = "", birth = "N/A";
@@ -57,18 +57,15 @@
     <div class="container">
         <div class="card">
 
-            <!-- header bar -->
             <div class="header">
                 <h1><%= name %></h1>
                 <a href="shopping-cart.jsp" class="btn-secondary">Checkout 🛒</a>
             </div>
 
-            <!-- back link -->
             <p><a class="back-link" href="movie-list.jsp?<%= backQS %>">
                 ← Back to Movie List
             </a></p>
 
-            <!-- star details + filmography -->
             <div class="details">
                 <p><strong>Birth Year:</strong> <%= birth %></p>
                 <ul class="movies">
@@ -82,8 +79,8 @@
                 </ul>
             </div>
 
-        </div><!-- /.card -->
-    </div><!-- /.container -->
-</div><!-- /.page-bg -->
+        </div>
+    </div>
+</div>
 </body>
 </html>

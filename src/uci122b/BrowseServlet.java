@@ -27,7 +27,7 @@ public class BrowseServlet extends HttpServlet {
             return;
         }
         String letter = req.getParameter("letter");
-        String genre  = req.getParameter("genre");
+        String genre = req.getParameter("genre");
 
         resp.setContentType("text/html");
         try (PrintWriter out = resp.getWriter()) {

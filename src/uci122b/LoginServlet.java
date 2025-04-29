@@ -20,7 +20,7 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         String email = req.getParameter("email");
-        String pw    = req.getParameter("password");
+        String pw = req.getParameter("password");
         if (email == null || pw == null) {
             resp.sendRedirect("login.html?error=invalid");
             return;

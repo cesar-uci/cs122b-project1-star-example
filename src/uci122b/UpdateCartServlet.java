@@ -18,13 +18,14 @@ public class UpdateCartServlet extends HttpServlet {
         Map<String,AddToCartServlet.CartItem> cart =
                 (Map<String,AddToCartServlet.CartItem>) session.getAttribute(AddToCartServlet.CART_ATTR);
         if (cart != null) {
-            String id       = req.getParameter("movieId");
-            int qty         = Integer.parseInt(req.getParameter("quantity"));
+            String id = req.getParameter("movieId");
+            int qty = Integer.parseInt(req.getParameter("quantity"));
             if (qty <= 0) {
                 cart.remove(id);
             } else {
                 AddToCartServlet.CartItem item = cart.get(id);
-                if (item != null) item.setQuantity(qty);
+                if (item != null)
+                    item.setQuantity(qty);
             }
         }
         resp.sendRedirect("shopping-cart.jsp");

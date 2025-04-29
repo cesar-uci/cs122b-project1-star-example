@@ -11,7 +11,6 @@ import java.util.Map;
 public class AddToCartServlet extends HttpServlet {
     public static final String CART_ATTR = "cart";
 
-    /** Simple bean to hold one line‐item in the cart. */
     public static class CartItem {
         private final String movieId;
         private final String title;
@@ -20,22 +19,32 @@ public class AddToCartServlet extends HttpServlet {
 
         public CartItem(String movieId, String title, double price, int quantity) {
             this.movieId = movieId;
-            this.title   = title;
-            this.price   = price;
+            this.title = title;
+            this.price = price;
             this.quantity = quantity;
         }
 
-        public String getMovieId() { return movieId; }
-        public String getTitle()   { return title;   }
-        public double getPrice()   { return price;   }
-        public int    getQuantity(){ return quantity;}
-        public void   setQuantity(int quantity) { this.quantity = quantity; }
+        public String getMovieId() {
+            return movieId;
+        }
+        public String getTitle() {
+            return title;
+        }
+        public double getPrice() {
+            return price;
+        }
+        public int getQuantity() {
+            return quantity;
+        }
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
+
         if (session == null || session.getAttribute("userEmail") == null) {
             resp.sendRedirect("login.html");
             return;
@@ -47,9 +56,9 @@ public class AddToCartServlet extends HttpServlet {
             cart = new HashMap<>();
         }
 
-        String movieId    = req.getParameter("movieId");
+        String movieId = req.getParameter("movieId");
         String movieTitle = req.getParameter("movieTitle");
-        double price      = Double.parseDouble(req.getParameter("price"));
+        double price = Double.parseDouble(req.getParameter("price"));
 
         CartItem item = cart.get(movieId);
         if (item == null) {

@@ -27,46 +27,47 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="container payment-card">
-  <div class="header">
-    <a href="shopping-cart.jsp" class="back">&larr; Back to Cart</a>
-    <h1>Payment</h1>
+<div class="container">
+  <div class="payment-card">
+
+    <div class="header">
+      <a href="shopping-cart.jsp" class="back-link">← Back to Cart</a>
+      <h1>Payment</h1>
+    </div>
+
+    <p>Your total is <strong>$<%=String.format("%.2f", total)%></strong></p>
+
+    <% if (error != null) { %>
+    <p class="error"><%= error %></p>
+    <% } %>
+
+    <form action="place-order" method="post" class="payment-form">
+      <input type="hidden" name="total" value="<%= total %>"/>
+
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input id="firstName" class="input-field" type="text" name="firstName" required>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input id="lastName" class="input-field" type="text" name="lastName" required>
+      </div>
+
+      <div class="form-group">
+        <label for="ccNumber">Credit Card Number</label>
+        <input id="ccNumber" class="input-field" type="text" name="ccNumber" required>
+      </div>
+
+      <div class="form-group">
+        <label for="expiration">Expiration Date</label>
+        <input id="expiration" class="input-field" type="month" name="expiration" required>
+      </div>
+
+      <button type="submit" class="btn-primary">Place Order</button>
+    </form>
+
   </div>
-
-  <p class="total-line">
-    Your total is <span class="total-amount">$<%=String.format("%.2f", total)%></span>
-  </p>
-
-  <%
-    if (error != null) {
-  %>
-  <p class="error-msg"><%= error %></p>
-  <%
-    }
-  %>
-
-  <form action="place-order" method="post" class="payment-form">
-    <!-- server will recompute / validate total if desired -->
-    <input type="hidden" name="total" value="<%= total %>"/>
-
-    <label>First Name:
-      <input type="text" name="firstName" required class="input-field"/>
-    </label>
-
-    <label>Last Name:
-      <input type="text" name="lastName" required class="input-field"/>
-    </label>
-
-    <label>Credit Card Number:
-      <input type="text" name="ccNumber" required class="input-field"/>
-    </label>
-
-    <label>Expiration Date:
-      <input type="month" name="expiration" required class="input-field"/>
-    </label>
-
-    <button type="submit" class="btn-primary">Place Order</button>
-  </form>
 </div>
 </body>
 </html>

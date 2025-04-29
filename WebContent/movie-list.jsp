@@ -20,14 +20,18 @@
         }
     }
 
-    String title = request.getParameter("title");
-    String year = request.getParameter("year");
+    String title    = request.getParameter("title");
+    String year     = request.getParameter("year");
     String director = request.getParameter("director");
-    String star = request.getParameter("star");
-    String genre = request.getParameter("genre");
-    String letter = request.getParameter("letter");
+    String star     = request.getParameter("star");
+    String genre    = request.getParameter("genre");
+    String letter   = request.getParameter("letter");
 
-    String sortBy  = "rating".equals(request.getParameter("sortBy")) ? "rating" : "title".equals(request.getParameter("sortBy")) ? "title" : "rating";
+    String sortBy  = "rating".equals(request.getParameter("sortBy"))
+            ? "rating"
+            : "title".equals(request.getParameter("sortBy"))
+            ? "title"
+            : "rating";
     String sortDir = "asc".equals(request.getParameter("sortDir")) ? "asc" : "desc";
 
     int pageSize;
@@ -39,7 +43,6 @@
     int pageNum;
     try { pageNum = Integer.parseInt(request.getParameter("page")); }
     catch (Exception e) { pageNum = 1; }
-
     if (pageNum < 1) pageNum = 1;
 
     Context initCtx = new InitialContext();
@@ -126,12 +129,12 @@
     );
 
     StringBuilder qs = new StringBuilder();
-    if (title != null) qs.append("title=").append(URLEncoder.encode(title,"UTF-8")).append("&");
-    if (year != null) qs.append("year=").append(year).append("&");
+    if (title    != null) qs.append("title=").append(URLEncoder.encode(title,"UTF-8")).append("&");
+    if (year     != null) qs.append("year=").append(year).append("&");
     if (director != null) qs.append("director=").append(URLEncoder.encode(director,"UTF-8")).append("&");
-    if (star != null) qs.append("star=").append(URLEncoder.encode(star,"UTF-8")).append("&");
-    if (genre != null) qs.append("genre=").append(URLEncoder.encode(genre,"UTF-8")).append("&");
-    if (letter != null) qs.append("letter=").append(URLEncoder.encode(letter,"UTF-8")).append("&");
+    if (star     != null) qs.append("star=").append(URLEncoder.encode(star,"UTF-8")).append("&");
+    if (genre    != null) qs.append("genre=").append(URLEncoder.encode(genre,"UTF-8")).append("&");
+    if (letter   != null) qs.append("letter=").append(URLEncoder.encode(letter,"UTF-8")).append("&");
     qs.append("sortBy=").append(sortBy).append("&")
             .append("sortDir=").append(sortDir).append("&")
             .append("pageSize=").append(pageSize).append("&")
@@ -147,39 +150,41 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<!-- OUTER WRAPPER + WHITE CARD -->
 <div class="container">
     <div class="card">
 
-        <!-- HEADER BAR WITH TITLE + CHECKOUT BUTTON -->
         <div class="header">
             <h1>Movie List</h1>
             <a href="shopping-cart.jsp" class="btn-secondary">Checkout 🛒</a>
         </div>
 
-        <!-- BACK LINK -->
-        <p><a href="index.html" class="back-link">← Back to Search/Browse</a></p>
+        <!-- Back to search/browse -->
+        <p>
+            <a href="index.html" class="back-link">← Back to Search/Browse</a>
+        </p>
 
+        <!-- Sort / page-size controls -->
         <div class="controls">
             <form method="get" action="movie-list.jsp" class="controls-form">
-                <%-- persist any existing filters --%>
+
+                <%-- Persist filters --%>
                 <% if (title    != null && !title.isEmpty())    { %>
-                <input type="hidden" name="title"    value="<%= title %>" />
+                <input type="hidden" name="title"    value="<%= title %>"/>
                 <% } %>
                 <% if (year     != null && !year.isEmpty())     { %>
-                <input type="hidden" name="year"     value="<%= year %>" />
+                <input type="hidden" name="year"     value="<%= year %>"/>
                 <% } %>
                 <% if (director != null && !director.isEmpty()) { %>
-                <input type="hidden" name="director" value="<%= director %>" />
+                <input type="hidden" name="director" value="<%= director %>"/>
                 <% } %>
                 <% if (star     != null && !star.isEmpty())     { %>
-                <input type="hidden" name="star"     value="<%= star %>" />
+                <input type="hidden" name="star"     value="<%= star %>"/>
                 <% } %>
                 <% if (genre    != null && !genre.isEmpty())    { %>
-                <input type="hidden" name="genre"    value="<%= genre %>" />
+                <input type="hidden" name="genre"    value="<%= genre %>"/>
                 <% } %>
                 <% if (letter   != null && !letter.isEmpty())   { %>
-                <input type="hidden" name="letter"   value="<%= letter %>" />
+                <input type="hidden" name="letter"   value="<%= letter %>"/>
                 <% } %>
 
                 <label>
@@ -205,15 +210,15 @@
                         <option value="25"  <%= pageSize==25  ? "selected" : "" %>>25</option>
                         <option value="50"  <%= pageSize==50  ? "selected" : "" %>>50</option>
                         <option value="100" <%= pageSize==100 ? "selected" : "" %>>100</option>
-                    </select> per&nbsp;page
+                    </select> per page
                 </label>
 
                 <button type="submit">Apply</button>
             </form>
         </div>
 
-        <!-- MOVIE ITEMS -->
-        <ul>
+        <!-- Movie items -->
+        <ul class="movies">
             <% for (Map<String,Object> m : movies) {
                 String id      = (String)  m.get("id");
                 String mTitle  = (String)  m.get("title");
@@ -241,9 +246,9 @@
                     <a href="single-movie.jsp?id=<%=id%>"><%=mTitle%></a>
                 </h2>
                 <form method="POST" action="add-to-cart" style="display:inline;">
-                    <input type="hidden" name="movieId"    value="<%=id%>">
-                    <input type="hidden" name="movieTitle" value="<%=mTitle%>">
-                    <input type="hidden" name="price"      value="<%=String.format("%.2f",mPrice)%>">
+                    <input type="hidden" name="movieId"    value="<%=id%>"/>
+                    <input type="hidden" name="movieTitle" value="<%=mTitle%>"/>
+                    <input type="hidden" name="price"      value="<%=String.format("%.2f",mPrice)%>"/>
                     <button type="submit">Add to Cart ($<%=String.format("%.2f",mPrice)%>)</button>
                 </form>
                 <div class="details">
@@ -267,8 +272,8 @@
             <% } %>
         </ul>
 
-        <!-- PAGINATION -->
-        <div style="text-align:center; margin-top:2rem;">
+        <!-- Pagination -->
+        <div class="pagination">
             <% if (pageNum > 1) { %>
             <a href="movie-list.jsp?<%= baseQS.replace("&page="+pageNum, "&page="+(pageNum-1)) %>">
                 ← Previous
@@ -283,13 +288,12 @@
 
     </div><!-- /.card -->
 </div><!-- /.container -->
-</body>
-</html>
 
 <%
-    // CLEANUP
     mainStmt.close();
     genreStmt.close();
     starStmt.close();
     conn.close();
 %>
+</body>
+</html>

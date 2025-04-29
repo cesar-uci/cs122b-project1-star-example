@@ -70,13 +70,11 @@
     <div class="container">
         <div class="card">
 
-            <!-- header bar -->
             <div class="header">
                 <h1><%= title %></h1>
                 <a href="shopping-cart.jsp" class="btn-secondary">Checkout 🛒</a>
             </div>
 
-            <!-- add-to-cart -->
             <form method="POST" action="add-to-cart" style="margin-bottom:1rem;">
                 <input type="hidden" name="movieId"    value="<%= movieId %>">
                 <input type="hidden" name="movieTitle" value="<%= title %>">
@@ -84,12 +82,10 @@
                 <button type="submit">Add to Cart ($10.00)</button>
             </form>
 
-            <!-- back link -->
             <p><a class="back-link" href="movie-list.jsp?<%= backQS %>">
                 ← Back to Movie List
             </a></p>
 
-            <!-- details -->
             <div class="details">
                 <p><strong>Year:</strong> <%= year %>,
                     <strong>Director:</strong> <%= director %>,
@@ -113,8 +109,8 @@
                 </p>
             </div>
 
-        </div><!-- .card -->
-    </div><!-- .container -->
-</div><!-- .page-bg -->
+        </div>
+    </div>
+</div>
 </body>
 </html>

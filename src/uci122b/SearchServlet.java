@@ -25,10 +25,10 @@ public class SearchServlet extends HttpServlet {
             resp.sendRedirect("login.html");
             return;
         }
-        String title    = req.getParameter("title");
-        String year     = req.getParameter("year");
+        String title = req.getParameter("title");
+        String year = req.getParameter("year");
         String director = req.getParameter("director");
-        String star     = req.getParameter("star");
+        String star = req.getParameter("star");
 
         resp.setContentType("text/html");
         try (PrintWriter out = resp.getWriter()) {
@@ -61,10 +61,14 @@ public class SearchServlet extends HttpServlet {
 
                 PreparedStatement stmt = conn.prepareStatement(sql.toString());
                 int idx=1;
-                if (title   !=null&&!title.isEmpty())    stmt.setString(idx++,"%"+title+"%");
-                if (year    !=null&&!year.isEmpty())     stmt.setInt   (idx++,Integer.parseInt(year));
-                if (director!=null&&!director.isEmpty()) stmt.setString(idx++,"%"+director+"%");
-                if (star    !=null&&!star.isEmpty())     stmt.setString(idx++,"%"+star+"%");
+                if (title !=null&&!title.isEmpty())
+                    stmt.setString(idx++,"%"+title+"%");
+                if (year !=null&&!year.isEmpty())
+                    stmt.setInt (idx++,Integer.parseInt(year));
+                if (director!=null&&!director.isEmpty())
+                    stmt.setString(idx++,"%"+director+"%");
+                if (star !=null&&!star.isEmpty())
+                    stmt.setString(idx++,"%"+star+"%");
 
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
@@ -74,6 +78,7 @@ public class SearchServlet extends HttpServlet {
                     }
                 }
             }
+
             out.println("</table></body></html>");
         } catch (Exception e) {
             throw new IOException("Search failed", e);

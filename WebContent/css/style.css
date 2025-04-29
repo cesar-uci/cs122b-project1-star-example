@@ -326,3 +326,43 @@ body {
 .btn-primary:hover {
     opacity: 0.9;
 }
+
+/* ─── Payment Card ───────────────────────────────────────────── */
+.payment-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+/* grid up the form into 2 columns */
+.payment-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* stack label over input */
+.payment-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+.payment-form .form-group label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+.payment-form .form-group .input-field {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* full-width submit button */
+.payment-form .btn-primary {
+    grid-column: 1 / -1;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+}
