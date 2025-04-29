@@ -4,6 +4,9 @@
   @SuppressWarnings("unchecked")
   Collection<CartItem> items =
           (Collection<CartItem>) request.getAttribute("purchasedItems");
+  if (items == null) {
+    items = Collections.emptyList();
+  }
 %>
 <!doctype html>
 <html lang="en">
@@ -13,19 +16,39 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>Order Confirmation</h1>
-<p>Thank you for your purchase! Here’s what you bought today:</p>
+<div class="page-bg">
+  <div class="container">
+    <div class="card">
 
-<table border="1" cellpadding="5" cellspacing="0">
-  <tr><th>Title</th><th>Quantity</th></tr>
-  <% for (CartItem it : items) { %>
-  <tr>
-    <td><%= it.getTitle() %></td>
-    <td><%= it.getQuantity() %></td>
-  </tr>
-  <% } %>
-</table>
+      <div class="header">
+        <h1>Thank you for your order!</h1>
+        <a href="movie-list.jsp" class="btn-secondary">← Continue Shopping</a>
+      </div>
 
-<p><a href="movie-list.jsp">Continue Shopping</a></p>
+      <p>Here’s what you purchased today:</p>
+
+      <table class="cart-table">
+        <thead>
+        <tr><th>Title</th><th>Quantity</th></tr>
+        </thead>
+        <tbody>
+        <% if (items.isEmpty()) { %>
+        <tr>
+          <td colspan="2">(No items found.)</td>
+        </tr>
+        <% } else {
+          for (CartItem it : items) { %>
+        <tr>
+          <td><%= it.getTitle() %></td>
+          <td><%= it.getQuantity() %></td>
+        </tr>
+        <%   }
+        } %>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+</div>
 </body>
 </html>

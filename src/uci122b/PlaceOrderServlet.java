@@ -8,9 +8,7 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
-import java.time.YearMonth;
-import java.time.LocalDate;
-import java.util.Map;
+import java.util.*;
 
 @WebServlet(name = "PlaceOrderServlet", urlPatterns = {"/place-order"})
 public class PlaceOrderServlet extends HttpServlet {
@@ -36,9 +34,8 @@ public class PlaceOrderServlet extends HttpServlet {
         String firstName = req.getParameter("firstName");
         String lastName = req.getParameter("lastName");
         String ccNumber = req.getParameter("ccNumber");
-        String expMonth = req.getParameter("expiration");
-
-        java.sql.Date expiration = java.sql.Date.valueOf(req.getParameter("expiration"));
+        java.sql.Date expiration =
+                java.sql.Date.valueOf(req.getParameter("expiration"));
 
         String userEmail = (String) session.getAttribute("userEmail");
 
@@ -48,18 +45,19 @@ public class PlaceOrderServlet extends HttpServlet {
 
             try (Connection conn = ds.getConnection()) {
                 String cardSql =
-                        "SELECT id FROM creditcards " +
-                                "WHERE id=? AND firstName=? AND lastName=? AND expiration=?";
+                        "SELECT id FROM creditcards "
+                                + "WHERE id=? AND firstName=? AND lastName=? AND expiration=?";
                 try (PreparedStatement cardStmt = conn.prepareStatement(cardSql)) {
                     cardStmt.setString(1, ccNumber);
                     cardStmt.setString(2, firstName);
                     cardStmt.setString(3, lastName);
-                    cardStmt.setDate (4, expiration);
+                    cardStmt.setDate(4, expiration);
 
                     try (ResultSet rc = cardStmt.executeQuery()) {
                         if (!rc.next()) {
                             req.setAttribute("error", "Invalid payment information");
-                            req.getRequestDispatcher("payment.jsp").forward(req, resp);
+                            req.getRequestDispatcher("payment.jsp")
+                                    .forward(req, resp);
                             return;
                         }
                     }
@@ -78,14 +76,14 @@ public class PlaceOrderServlet extends HttpServlet {
                 }
 
                 String saleSql =
-                        "INSERT INTO sales(customerId, movieId, saleDate) " +
-                                "VALUES (?, ?, CURRENT_DATE())";
+                        "INSERT INTO sales(customerId, movieId, saleDate) "
+                                + "VALUES (?, ?, CURRENT_DATE())";
                 try (PreparedStatement saleStmt = conn.prepareStatement(saleSql)) {
                     for (AddToCartServlet.CartItem item : cart.values()) {
                         String movieId = item.getMovieId();
                         int qty = item.getQuantity();
                         for (int i = 0; i < qty; i++) {
-                            saleStmt.setInt   (1, customerId);
+                            saleStmt.setInt(1, customerId);
                             saleStmt.setString(2, movieId);
                             saleStmt.addBatch();
                         }
@@ -93,9 +91,14 @@ public class PlaceOrderServlet extends HttpServlet {
                     saleStmt.executeBatch();
                 }
 
+                Collection<AddToCartServlet.CartItem> purchasedItems =
+                        new ArrayList<>(cart.values());
+                req.setAttribute("purchasedItems", purchasedItems);
+
                 session.removeAttribute(CART_ATTR);
 
-                req.getRequestDispatcher("confirmation.jsp").forward(req, resp);
+                req.getRequestDispatcher("confirmation.jsp")
+                        .forward(req, resp);
             }
 
         } catch (Exception e) {
