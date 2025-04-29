@@ -149,6 +149,11 @@ fabric.properties
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+# macOS filesystem files
+.DS_Store
+WebContent/.DS_Store
+
+
 ### Java-Web ###
 ## ignoring target file
 target/
