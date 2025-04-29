@@ -38,9 +38,7 @@ public class PlaceOrderServlet extends HttpServlet {
         String ccNumber = req.getParameter("ccNumber");
         String expMonth = req.getParameter("expiration");
 
-        YearMonth ym = YearMonth.parse(expMonth);
-        LocalDate ld = ym.atEndOfMonth();
-        java.sql.Date expiration = java.sql.Date.valueOf(ld);
+        java.sql.Date expiration = java.sql.Date.valueOf(req.getParameter("expiration"));
 
         String userEmail = (String) session.getAttribute("userEmail");
 

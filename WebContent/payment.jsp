@@ -61,7 +61,7 @@
 
       <div class="form-group">
         <label for="expiration">Expiration Date</label>
-        <input id="expiration" class="input-field" type="month" name="expiration" required>
+        <input id="expiration" class="input-field" type="date" name="expiration" required>
       </div>
 
       <button type="submit" class="btn-primary">Place Order</button>
