@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    <title>Fabflix Main Page</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Load reCAPTCHA Enterprise JS with your site key -->
+    <script
+            src="https://www.google.com/recaptcha/enterprise.js?render=6LfBczQrAAAAAJgTzTfbR1L_1Wh8fWenwvwb-kk3">
+    </script>
+</head>
+<body>
+<div class="page-bg">
+    <header class="app-header">
+        <h1>Fabflix</h1>
+        <nav><a href="logout">Logout</a></nav>
+    </header>
+
+    <main class="container card">
+        <section id="search-section">
+            <h2>Search Movies</h2>
+            <form method="GET" action="login" class="search-form" id="searchForm">
+                <input type="text" name="title"    placeholder="Title">
+                <input type="text" name="year"     placeholder="Year">
+                <input type="text" name="director" placeholder="Director">
+                <input type="text" name="star"     placeholder="Star name">
+
+                <!-- Hidden token field -->
+                <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+
+                <button type="submit" id="searchBtn">Search</button>
+            </form>
+        </section>
+
+        <!-- … genre & letter sections as before … -->
+    </main>
+</div>
+
+<script>
+    // Protect the Search form with Enterprise reCAPTCHA
+    document.getElementById('searchBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        grecaptcha.enterprise.ready(async () => {
+            const token = await grecaptcha.enterprise.execute(
+                '6LfBczQrAAAAAJgTzTfbR1L_1Wh8fWenwvwb-kk3',
+                { action: 'search' }
+            );
+            document.getElementById('g-recaptcha-response').value = token;
+            document.getElementById('searchForm').submit();
+        });
+    });
+</script>
+</body>
+</html>
