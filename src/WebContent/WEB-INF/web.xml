@@ -2,18 +2,18 @@
 <web-app
         xmlns="http://xmlns.jcp.org/xml/ns/javaee"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-                        http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+        xsi:schemaLocation="
+      http://xmlns.jcp.org/xml/ns/javaee
+      http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
         version="3.1">
 
-    <display-name>cs122b_project1_star_example</display-name>
+    <display-name>Fabflix Project 2</display-name>
 
-    <!-- Landing page -->
     <welcome-file-list>
-        <welcome-file>login.jsp</welcome-file>
+        <!-- Dispatch root to /login servlet -->
+        <welcome-file>login</welcome-file>
     </welcome-file-list>
 
-    <!-- JNDI DataSource reference -->
     <resource-ref>
         <description>MovieDB connection pool</description>
         <res-ref-name>jdbc/moviedb</res-ref-name>

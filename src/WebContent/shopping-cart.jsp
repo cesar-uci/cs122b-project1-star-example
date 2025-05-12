@@ -3,7 +3,7 @@
 <%
   // logged-in
   if (session == null || session.getAttribute("userEmail") == null) {
-    response.sendRedirect("login.html");
+    resp.sendRedirect(req.getContextPath() + "/login");
     return;
   }
   @SuppressWarnings("unchecked")

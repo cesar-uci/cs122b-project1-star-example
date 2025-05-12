@@ -30,7 +30,7 @@ public class AuthFilter implements Filter {
         String path = req.getRequestURI().substring(req.getContextPath().length());
 
         // Allow login, index, search/browse, static resources
-        if ( path.equals("/login.html")
+        if ( path.equals("/login")
                 || path.equals("/login")
                 || path.equals("/")
                 || path.startsWith("/search")
@@ -46,7 +46,7 @@ public class AuthFilter implements Filter {
         HttpSession session = req.getSession(false);
         boolean loggedIn = (session != null && session.getAttribute("userEmail") != null);
         if (!loggedIn) {
-            res.sendRedirect(req.getContextPath() + "/login.html");
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 

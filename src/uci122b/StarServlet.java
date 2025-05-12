@@ -23,7 +23,7 @@ public class StarServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
 
         if (session == null || session.getAttribute("userEmail") == null) {
-            resp.sendRedirect("login.html");
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
         resp.setContentType("text/html");

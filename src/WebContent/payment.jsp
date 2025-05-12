@@ -2,7 +2,7 @@
 <%@ page import="java.util.Map, uci122b.AddToCartServlet, uci122b.AddToCartServlet.CartItem" %>
 <%
   if (session == null || session.getAttribute("userEmail") == null) {
-    response.sendRedirect("login.html");
+    resp.sendRedirect(req.getContextPath() + "/login");
     return;
   }
 

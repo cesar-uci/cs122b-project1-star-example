@@ -11,7 +11,7 @@ public class UpdateCartServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendRedirect("login.html");
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
         @SuppressWarnings("unchecked")

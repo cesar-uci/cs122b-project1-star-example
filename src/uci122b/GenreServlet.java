@@ -24,7 +24,7 @@ public class GenreServlet extends HttpServlet {
             throws IOException {
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("userEmail") == null) {
-            resp.sendRedirect("login.html");
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
         resp.setContentType("application/json");

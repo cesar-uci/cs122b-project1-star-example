@@ -46,7 +46,7 @@ public class AddToCartServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
 
         if (session == null || session.getAttribute("userEmail") == null) {
-            resp.sendRedirect("login.html");
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
