@@ -5,6 +5,7 @@
       <map>
         <entry key="file://$PROJECT_DIR$/WebContent/movie-list.jsp" value="file://$PROJECT_DIR$/WebContent" />
         <entry key="file://$PROJECT_DIR$/src/WebContent/login.jsp" value="file://$PROJECT_DIR$/src/WebContent" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/confirmation.jsp" value="file://$PROJECT_DIR$/src/main/webapp" />
       </map>
     </option>
   </component>

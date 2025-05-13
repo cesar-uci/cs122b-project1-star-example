@@ -13,7 +13,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Order Confirmation</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css"> <%-- CORRECTED --%>
 </head>
 <body>
 <div class="page-bg">
@@ -22,7 +22,7 @@
 
       <div class="header">
         <h1>Thank you for your order!</h1>
-        <a href="movie-list.jsp" class="btn-secondary">← Continue Shopping</a>
+        <a href="${pageContext.request.contextPath}/movie-list.jsp" class="btn-secondary">← Continue Shopping</a> <%-- CORRECTED --%>
       </div>
 
       <p>Here’s what you purchased today:</p>

@@ -3,8 +3,7 @@
 <%
   // logged-in
   if (session == null || session.getAttribute("userEmail") == null) {
-    resp.sendRedirect(req.getContextPath() + "/login");
-    return;
+    response.sendRedirect(request.getContextPath() + "/login");     return;
   }
   @SuppressWarnings("unchecked")
   Map<String,CartItem> cart =
@@ -86,7 +85,7 @@
     </table>
 
     <div class="text-right">
-      <form action="payment.jsp">
+      <form method="GET" action="${pageContext.request.contextPath}/payment"> <%-- MODIFIED to servlet URL --%>
         <button type="submit" class="btn btn-primary">Proceed to Payment</button>
       </form>
     </div>

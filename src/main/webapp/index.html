@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    <title>Fabflix Main Page</title>
+    <link rel="stylesheet" href="css/style.css"> <%-- Make sure this path is correct --%>
+</head>
+<body>
+<div class="page-bg">
+    <header class="app-header">
+        <h1>Fabflix</h1>
+        <%--
+        Assuming LogoutServlet is mapped to "/logout".
+        Adjust if your logout servlet is mapped differently or if you use a different mechanism.
+        --%>
+        <nav><a href="logout">Logout</a></nav>
+    </header>
+
+    <main class="container card">
+        <section id="search-section">
+            <h2>Search Movies</h2>
+            <%-- Action should point to your SearchServlet mapping --%>
+            <form method="GET" action="search" class="search-form">
+                <input type="text"  name="title"    placeholder="Title">
+                <input type="text"  name="year"     placeholder="Year">
+                <input type="text"  name="director" placeholder="Director">
+                <input type="text"  name="star"     placeholder="Star name">
+                <button type="submit">Search</button>
+            </form>
+        </section>
+
+        <section id="browse-genre">
+            <h2>Browse by Genre</h2>
+            <ul id="genre-list" class="button-list">
+                <%-- Genres will be populated here by JavaScript --%>
+            </ul>
+        </section>
+
+        <section id="browse-letter">
+            <h2>Browse by Title</h2>
+            <ul id="alpha-list" class="button-list">
+                <%-- Alphanumeric characters will be populated here by JavaScript --%>
+            </ul>
+        </section>
+    </main>
+</div>
+
+<script>
+    // fetch genres via AJAX - points to GenreServlet
+    fetch('genres') // Assuming GenreServlet is mapped to "/genres"
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok for genres');
+            }
+            return response.json();
+        })
+        .then(genres => {
+            const ul = document.getElementById('genre-list');
+            if (ul) { // Check if the element exists
+                genres.forEach(genreName => {
+                    const li = document.createElement('li');
+                    // Links point to BrowseServlet for genre Browse
+                    li.innerHTML = `<a href="browse?genre=${encodeURIComponent(genreName)}">${genreName}</a>`;
+                    ul.appendChild(li);
+                });
+            } else {
+                console.error('Element with ID "genre-list" not found.');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching or processing genres:', error);
+            const ul = document.getElementById('genre-list');
+            if (ul) ul.innerHTML = '<li>Could not load genres.</li>';
+        });
+
+    // build 0–9, A–Z + "*" browse buttons
+    const alpha = ['*', ...'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
+    const alphaUl = document.getElementById('alpha-list');
+
+    if (alphaUl) { // Check if the element exists
+        alpha.forEach(character => {
+            const li = document.createElement('li');
+            // Links point to BrowseServlet for letter Browse
+            li.innerHTML = `<a href="browse?letter=${encodeURIComponent(character)}">${character}</a>`;
+            alphaUl.appendChild(li);
+        });
+    } else {
+        console.error('Element with ID "alpha-list" not found.');
+    }
+</script>
+</body>
+</html>

@@ -2,8 +2,7 @@
 <%@ page import="java.util.Map, uci122b.AddToCartServlet, uci122b.AddToCartServlet.CartItem" %>
 <%
   if (session == null || session.getAttribute("userEmail") == null) {
-    resp.sendRedirect(req.getContextPath() + "/login");
-    return;
+    response.sendRedirect(request.getContextPath() + "/login");     return;
   }
 
   @SuppressWarnings("unchecked")
@@ -24,14 +23,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Payment</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css"> <%-- Ensured context path --%>
 </head>
 <body>
 <div class="container">
   <div class="payment-card">
 
     <div class="header">
-      <a href="shopping-cart.jsp" class="back-link">← Back to Cart</a>
+      <a href="${pageContext.request.contextPath}/shopping-cart.jsp" class="back-link">← Back to Cart</a> <%-- Ensured context path --%>
       <h1>Payment</h1>
     </div>
 
@@ -41,7 +40,8 @@
     <p class="error"><%= error %></p>
     <% } %>
 
-    <form action="place-order" method="post" class="payment-form">
+    <%-- MODIFIED action to include context path --%>
+    <form action="${pageContext.request.contextPath}/place-order" method="post" class="payment-form">
       <input type="hidden" name="total" value="<%= total %>"/>
 
       <div class="form-group">

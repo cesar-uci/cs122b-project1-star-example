@@ -1,5 +1,6 @@
 package uci122b;
 
+// Changed javax.* to jakarta.*
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -30,15 +31,20 @@ public class AuthFilter implements Filter {
         String path = req.getRequestURI().substring(req.getContextPath().length());
 
         // Allow login, index, search/browse, static resources
+        // Added check for login.jsp explicitly if it's accessed directly (though should go through servlet ideally)
+        // Added check for API endpoints if any are public
         if ( path.equals("/login")
-                || path.equals("/login")
+                || path.equals("/login.jsp") // Might need this depending on setup
                 || path.equals("/")
                 || path.startsWith("/search")
                 || path.startsWith("/browse")
-                || path.startsWith("/genres")
+                || path.startsWith("/genres") // Assuming genres can be viewed without login
+                || path.startsWith("/single-movie") // Assuming movie details can be viewed without login
                 || path.startsWith("/css/")
                 || path.startsWith("/images/")
-                || path.startsWith("/js/") ) {
+                || path.startsWith("/js/")
+                || path.startsWith("/api/") // Example: if you have public API endpoints
+        ) {
             chain.doFilter(request, response);
             return;
         }
@@ -46,7 +52,8 @@ public class AuthFilter implements Filter {
         HttpSession session = req.getSession(false);
         boolean loggedIn = (session != null && session.getAttribute("userEmail") != null);
         if (!loggedIn) {
-            resp.sendRedirect(req.getContextPath() + "/login");
+            // Use res instead of resp (variable name consistency)
+            res.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
