@@ -1,16 +1,8 @@
 package uci122b;
 
-// Changed javax.* to jakarta.*
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 
 import java.io.IOException;
 
@@ -30,29 +22,31 @@ public class AuthFilter implements Filter {
 
         String path = req.getRequestURI().substring(req.getContextPath().length());
 
-        // Allow login, index, search/browse, static resources
-        // Added check for login.jsp explicitly if it's accessed directly (though should go through servlet ideally)
-        // Added check for API endpoints if any are public
-        if ( path.equals("/login")
-                || path.equals("/login.jsp") // Might need this depending on setup
-                || path.equals("/")
-                || path.startsWith("/search")
-                || path.startsWith("/browse")
-                || path.startsWith("/genres") // Assuming genres can be viewed without login
-                || path.startsWith("/single-movie") // Assuming movie details can be viewed without login
-                || path.startsWith("/css/")
-                || path.startsWith("/images/")
-                || path.startsWith("/js/")
-                || path.startsWith("/api/") // Example: if you have public API endpoints
+        // Whitelist public/customer endpoints:
+        if (
+                path.equals("/login")
+                        || path.equals("/login.jsp")
+                        || path.equals("/")
+                        || path.startsWith("/search")
+                        || path.startsWith("/browse")
+                        || path.startsWith("/genres")
+                        || path.startsWith("/single-movie")
+                        || path.startsWith("/css/")
+                        || path.startsWith("/images/")
+                        || path.startsWith("/js/")
+                        // **NEW** Allow DashboardServlet to handle employee login & dashboard
+                        || path.equals("/_dashboard")
         ) {
             chain.doFilter(request, response);
             return;
         }
 
+        // Now enforce customer login:
         HttpSession session = req.getSession(false);
-        boolean loggedIn = (session != null && session.getAttribute("userEmail") != null);
-        if (!loggedIn) {
-            // Use res instead of resp (variable name consistency)
+        boolean customerLoggedIn = (session != null && session.getAttribute("userEmail") != null);
+
+        // Any other path that isn't /_dashboard and not whitelisted:
+        if (!customerLoggedIn) {
             res.sendRedirect(req.getContextPath() + "/login");
             return;
         }

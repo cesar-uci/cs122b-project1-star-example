@@ -6,6 +6,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 // javax.naming.* and javax.sql.* remain javax.*
 import javax.naming.Context;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.Statement;
+
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import java.io.IOException;

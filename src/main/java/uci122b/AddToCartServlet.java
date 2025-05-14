@@ -128,30 +128,24 @@ public class AddToCartServlet extends HttpServlet {
             session.setAttribute(CART_ATTR, cart); // Add the new cart to the session
         }
 
-        // Add or update the item in the cart
         CartItem item = cart.get(movieId);
         if (item == null) {
-            // Item not in cart, add new one
             item = new CartItem(movieId, movieTitle, price, 1);
             cart.put(movieId, item);
             System.out.println("Added new item to cart: " + movieTitle);
         } else {
-            // Item already exists, increment quantity
             item.incrementQuantity(1);
             System.out.println("Incremented quantity for item: " + movieTitle);
         }
 
-        // Optionally: Set an attribute to show a success message on the next page
         session.setAttribute("cart_message", "Added '" + movieTitle + "' to your cart.");
 
-        // Redirect back to the movie list page (or wherever the user came from)
-        // Consider using a referer header, but it's not always reliable
+
         String referer = req.getHeader("Referer");
         if (referer != null && !referer.isEmpty()) {
             System.out.println("Redirecting back to: " + referer);
             resp.sendRedirect(referer);
         } else {
-            // Default redirect if referer is not available
             System.out.println("Redirecting to default movie list.");
             resp.sendRedirect(req.getContextPath() + "/movie-list"); // Assuming /movie-list is the main movie page
         }

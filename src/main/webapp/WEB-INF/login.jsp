@@ -63,7 +63,7 @@
       <%-- The SITE_KEY is passed from LoginServlet's doGet as 'siteKey' request attribute --%>
       <% String siteKey = (String) request.getAttribute("siteKey"); %>
       <% if (siteKey != null && !siteKey.isEmpty()) { %>
-      <div class="form-group" style="margin-top: 1rem; margin-bottom: 1rem; display: flex; justify-content: center;"> {/* Added form-group for potential styling and centering */}
+      <div class="form-group" style="margin-top: 1rem; margin-bottom: 1rem; display: flex; justify-content: center;">
         <div class="g-recaptcha" data-sitekey="<%= siteKey %>"></div>
       </div>
       <% } else { %>
