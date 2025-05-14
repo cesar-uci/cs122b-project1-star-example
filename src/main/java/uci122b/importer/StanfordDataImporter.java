@@ -167,11 +167,9 @@ public class StanfordDataImporter {
 
             String movieId = fidToMovieId.get(fid);
             if (movieId == null) {
-                // Skip if we never imported that film
                 continue;
             }
 
-            // 1) Star lookup / create
             String starId = starCache.get(starName);
             if (starId == null) {
                 selStar.setString(1, starName);
@@ -192,14 +190,12 @@ public class StanfordDataImporter {
                 starCache.put(starName, starId);
             }
 
-            // 2) Link table
             insS2M.setString(1, starId);
             insS2M.setString(2, movieId);
             insS2M.addBatch();
         }
         insS2M.executeBatch();
 
-        // cleanup
         selStar.close();
         insStar.close();
         maxStarId.close();

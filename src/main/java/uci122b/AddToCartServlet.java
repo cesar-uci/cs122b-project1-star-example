@@ -13,13 +13,12 @@ import java.util.Map;
 public class AddToCartServlet extends HttpServlet {
     public static final String CART_ATTR = "cart"; // Session attribute name for the cart
 
-    // Inner class for CartItem - should be Serializable
     public static class CartItem implements Serializable {
-        private static final long serialVersionUID = 1L; // Recommended for Serializable classes
+        private static final long serialVersionUID = 1L;
 
         private final String movieId;
         private final String title;
-        private final double price; // Use BigDecimal for currency if precision is critical
+        private final double price;
         private int quantity;
 
         // Constructor
@@ -60,7 +59,6 @@ public class AddToCartServlet extends HttpServlet {
             }
         }
 
-        // Optional: Calculate total price for this item
         public double getTotalPrice() {
             return this.price * this.quantity;
         }

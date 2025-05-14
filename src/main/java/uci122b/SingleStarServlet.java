@@ -42,14 +42,12 @@ public class SingleStarServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse resp)
             throws ServletException, IOException {
-        // 1) Authentication check
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("userEmail") == null) {
             resp.sendRedirect(req.getContextPath() + "/login?error=unauthorized_access_to_star_details");
             return;
         }
 
-        // 2) Read and validate starId
         String starId = req.getParameter("starId");
         if (starId == null || starId.trim().isEmpty()) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing or empty starId parameter.");
@@ -57,7 +55,6 @@ public class SingleStarServlet extends HttpServlet {
         }
         req.setAttribute("starId", starId);
 
-        // 3) Build back‑query string (preserving all other params)
         StringBuilder backQS = new StringBuilder();
         Enumeration<String> names = req.getParameterNames();
         boolean first = true;
@@ -75,7 +72,6 @@ public class SingleStarServlet extends HttpServlet {
         }
         req.setAttribute("backQS", backQS.toString());
 
-        // 4) Prepare our two parameterized queries
         String starSql =
                 "SELECT name, birthYear " +
                         "FROM stars " +
@@ -87,9 +83,7 @@ public class SingleStarServlet extends HttpServlet {
                         "WHERE sim.starId = ? " +
                         "ORDER BY m.year DESC, m.title ASC";
 
-        // 5) Execute with PreparedStatement
         try (Connection conn = ds.getConnection()) {
-            // 5a) Star details
             try (PreparedStatement ps1 = conn.prepareStatement(starSql)) {
                 ps1.setString(1, starId);
                 try (ResultSet rs1 = ps1.executeQuery()) {
@@ -108,7 +102,6 @@ public class SingleStarServlet extends HttpServlet {
                 }
             }
 
-            // 5b) Movies for this star
             List<Map<String,String>> moviesList = new ArrayList<>();
             try (PreparedStatement ps2 = conn.prepareStatement(moviesSql)) {
                 ps2.setString(1, starId);

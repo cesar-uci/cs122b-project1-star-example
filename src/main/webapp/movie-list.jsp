@@ -214,7 +214,7 @@
 <head>
     <meta charset="utf-8">
     <title>Movie List</title>
-    <link rel="stylesheet" href="css/style.css"> <%-- Make sure this path is correct --%>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="page-bg"> <%-- Added page-bg for consistency with index.html --%>

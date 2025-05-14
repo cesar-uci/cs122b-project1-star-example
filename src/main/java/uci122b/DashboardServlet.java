@@ -31,19 +31,16 @@ public class DashboardServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
 
-        // 1) Not yet logged in as employee → show employee login form
         if (session == null || session.getAttribute("empEmail") == null) {
             req.getRequestDispatcher("/WEB-INF/employee-login.jsp")
                     .forward(req, resp);
             return;
         }
 
-        // 2) Logged in → build schema map
         Map<String,List<String>> schema = new LinkedHashMap<>();
         try (Connection conn = ds.getConnection()) {
             DatabaseMetaData md = conn.getMetaData();
 
-            // Only real tables
             try (ResultSet tables = md.getTables(null, null, "%", new String[]{"TABLE"})) {
                 while (tables.next()) {
                     String tableName = tables.getString("TABLE_NAME");

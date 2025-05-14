@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-// No need for database imports here if movie-list.jsp handles the query
 // import javax.naming.Context;
 // import javax.naming.InitialContext;
 // import javax.sql.DataSource;
@@ -46,10 +45,6 @@ public class SearchServlet extends HttpServlet {
         // String year = req.getParameter("year");
         // String director = req.getParameter("director");
         // String star = req.getParameter("star");
-
-        // The parameters 'title', 'year', 'director', 'star' are already in the request.
-        // movie-list.jsp is designed to pick these up using request.getParameter()
-        // and build its own SQL query.
 
         // Log the search action
         System.out.println("Search submitted with parameters: " + req.getQueryString());

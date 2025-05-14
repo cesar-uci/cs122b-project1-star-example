@@ -21,7 +21,6 @@
   </c:if>
 
   <form method="post" action="${pageContext.request.contextPath}/_dashboard">
-    <!-- tell DashboardServlet to do the login branch -->
     <input type="hidden" name="action" value="login"/>
 
     <label>Email:

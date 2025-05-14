@@ -122,8 +122,6 @@ public class SingleMovieServlet extends HttpServlet {
             System.err.println("Error fetching movie details for ID " + movieId + ": " + e.getMessage());
             e.printStackTrace(); // Log stack trace to server logs
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading movie details.");
-            // Avoid throwing ServletException after sending error
-            // throw new ServletException(e);
             return; // Stop further processing
         }
 

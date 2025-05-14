@@ -90,7 +90,6 @@ public class PlaceOrderServlet extends HttpServlet {
             conn = ds.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Verify Credit Card Information
             System.out.println("PlaceOrderServlet DEBUG: Attempting to validate card against DB.");
 
             String cardSql = "SELECT id FROM creditcards WHERE id=? AND firstName=? AND lastName=? AND expiration=?";
@@ -128,8 +127,6 @@ public class PlaceOrderServlet extends HttpServlet {
                 return;
             }
 
-            // ... (rest of your customer ID fetching, sales insert, confirmation forward) ...
-            // 2. Get Customer ID
             int customerId = -1;
             String custSql = "SELECT id FROM customers WHERE email=?";
             try (PreparedStatement custStmt = conn.prepareStatement(custSql)) {
@@ -152,7 +149,6 @@ public class PlaceOrderServlet extends HttpServlet {
                 return;
             }
 
-            // 3. Insert Sales Records (Batch Insert)
             java.sql.Date saleDate = java.sql.Date.valueOf(LocalDate.now());
             String saleSql = "INSERT INTO sales(customerId, movieId, saleDate) VALUES (?, ?, ?)";
             int totalItemsInserted = 0;

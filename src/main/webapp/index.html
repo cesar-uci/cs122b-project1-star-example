@@ -5,23 +5,19 @@
     <meta name="viewport"
           content="width=device-width,initial-scale=1,shrink-to-fit=no">
     <title>Fabflix Main Page</title>
-    <link rel="stylesheet" href="css/style.css"> <%-- Make sure this path is correct --%>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="page-bg">
     <header class="app-header">
         <h1>Fabflix</h1>
-        <%--
-        Assuming LogoutServlet is mapped to "/logout".
-        Adjust if your logout servlet is mapped differently or if you use a different mechanism.
-        --%>
+
         <nav><a href="logout">Logout</a></nav>
     </header>
 
     <main class="container card">
         <section id="search-section">
             <h2>Search Movies</h2>
-            <%-- Action should point to your SearchServlet mapping --%>
             <form method="GET" action="search" class="search-form">
                 <input type="text"  name="title"    placeholder="Title">
                 <input type="text"  name="year"     placeholder="Year">
@@ -34,14 +30,12 @@
         <section id="browse-genre">
             <h2>Browse by Genre</h2>
             <ul id="genre-list" class="button-list">
-                <%-- Genres will be populated here by JavaScript --%>
             </ul>
         </section>
 
         <section id="browse-letter">
             <h2>Browse by Title</h2>
             <ul id="alpha-list" class="button-list">
-                <%-- Alphanumeric characters will be populated here by JavaScript --%>
             </ul>
         </section>
     </main>
