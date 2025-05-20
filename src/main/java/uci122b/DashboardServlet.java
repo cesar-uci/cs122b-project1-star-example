@@ -137,17 +137,17 @@ public class DashboardServlet extends HttpServlet {
 
         // --- Call add_movie stored procedure ---
         if ("addMovie".equals(action)) {
-            String title   = req.getParameter("title");
+            String title = req.getParameter("title");
             String yearStr = req.getParameter("year");
-            String dir     = req.getParameter("director");
-            String star    = req.getParameter("star");
-            String genre   = req.getParameter("genre");
+            String dir = req.getParameter("director");
+            String star = req.getParameter("star");
+            String genre = req.getParameter("genre");
 
             try (Connection conn = ds.getConnection();
                  CallableStatement cs = conn.prepareCall("{CALL add_movie(?,?,?,?,?,?)}")) {
 
                 cs.setString(1, title);
-                cs.setInt   (2, Integer.parseInt(yearStr));
+                cs.setInt(2, Integer.parseInt(yearStr));
                 cs.setString(3, dir);
                 cs.setString(4, star);
                 cs.setString(5, genre);

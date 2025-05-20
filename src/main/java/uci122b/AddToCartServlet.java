@@ -1,11 +1,10 @@
 package uci122b;
 
-// Changed javax.* to jakarta.*
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.io.Serializable; // CartItem should be Serializable if stored in session across nodes
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,12 +81,9 @@ public class AddToCartServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false); // Don't create session if user isn't logged in
 
-        // Authentication Check
         if (session == null || session.getAttribute("userEmail") == null) {
             System.out.println("AddToCartServlet: Unauthorized attempt.");
-            // Send an error response or redirect to login
             resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You must be logged in to add items to the cart.");
-            // resp.sendRedirect(req.getContextPath() + "/login?error=unauthorized_cart");
             return;
         }
 
