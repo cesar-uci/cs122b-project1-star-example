@@ -4,7 +4,7 @@
 * Cesar Gonzalez (21385718)
 
 ## Demo Video
-* **Link:** (To be added: YouTube link for the project demo video)
+https://youtu.be/L9_RLLDq1cs
 
 ## Instructions to Run This Project
 
