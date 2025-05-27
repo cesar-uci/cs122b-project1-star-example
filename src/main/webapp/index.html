@@ -6,23 +6,20 @@
           content="width=device-width,initial-scale=1,shrink-to-fit=no">
     <title>Fabflix Main Page</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.4.11/css/jquery.autocomplete.min.css">
 </head>
 <body>
 <div class="page-bg">
     <header class="app-header">
         <h1>Fabflix</h1>
-
         <nav><a href="logout">Logout</a></nav>
     </header>
 
     <main class="container card">
         <section id="search-section">
             <h2>Search Movies</h2>
-            <form method="GET" action="search" class="search-form">
-                <input type="text"  name="title"    placeholder="Title">
-                <input type="text"  name="year"     placeholder="Year">
-                <input type="text"  name="director" placeholder="Director">
-                <input type="text"  name="star"     placeholder="Star name">
+            <form method="GET" action="search" class="search-form" id="main-search-form">
+                <input type="text" id="main_search_box" name="q" placeholder="Search movie titles..." autocomplete="off">
                 <button type="submit">Search</button>
             </form>
         </section>
@@ -41,9 +38,92 @@
     </main>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.4.11/jquery.autocomplete.min.js"></script>
+
 <script>
-    // fetch genres via AJAX - points to GenreServlet
-    fetch('genres') // Assuming GenreServlet is mapped to "/genres"
+    // Cache for autocomplete suggestions
+    // Requirement: Cache the suggestion list of each query ... in the frontend [cite: 373]
+    const autocompleteCache = {}; // Using a simple object for in-memory cache for this session.
+    // For LocalStorage/SessionStorage:
+    // const autocompleteCache = window.sessionStorage; // or window.localStorage;
+
+    function handleAutocompleteSelect(suggestion) {
+        // Requirement: Clicking on any of the suggestion entries, or pressing "Enter" Key if an entry is selected
+        // ... it should jump to the corresponding Single Movie Page directly. [cite: 365]
+        console.log("Suggestion selected: " + suggestion.value + " (ID: " + suggestion.data + ")");
+        // Redirect to single movie page
+        window.location.href = "single-movie?movieId=" + suggestion.data;
+    }
+
+    $('#main_search_box').autocomplete({
+        minChars: 3, // Requirement: Autocomplete search when the customer types in at least 3 characters. [cite: 368]
+        deferRequestBy: 300, // Requirement: Set a small delay time (300ms). [cite: 371]
+        lookup: function (query, done) {
+            console.log("Autocomplete search initiated for: '" + query + "' (after delay)"); // Requirement: Print log when search is initiated [cite: 379]
+
+            // Check cache first
+            // Requirement: check if the query and its suggestion list are in the cache. [cite: 374]
+            if (query in autocompleteCache) {
+                // For LocalStorage/SessionStorage:
+                // if (autocompleteCache.getItem(query)) {
+                console.log("Using cached results for: '" + query + "'"); // Requirement: Log if using cached results [cite: 380]
+                const cachedSuggestions = autocompleteCache[query];
+                // For LocalStorage/SessionStorage:
+                // const cachedSuggestions = JSON.parse(autocompleteCache.getItem(query));
+                console.log("Used suggestion list (from cache):", cachedSuggestions); // Requirement: Log the used suggestion list [cite: 381]
+                done({ suggestions: cachedSuggestions });
+                return;
+            }
+
+            console.log("Sending AJAX request to server for: '" + query + "'"); // Requirement: Log if sending AJAX request [cite: 380]
+            // AJAX call to the new servlet
+            $.ajax({
+                method: "GET",
+                url: "api/movie-suggestions", // URL of your MovieSuggestionServlet
+                data: { query: query }
+            }).done(function (data) {
+                // 'data' is expected to be an array of objects like {value: "Title", data: "movieId"}
+                // Cache the results
+                autocompleteCache[query] = data;
+                // For LocalStorage/SessionStorage:
+                // autocompleteCache.setItem(query, JSON.stringify(data));
+                console.log("Used suggestion list (from server):", data); // Requirement: Log the used suggestion list [cite: 381]
+                done({ suggestions: data });
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                console.error("Autocomplete AJAX error:", textStatus, errorThrown);
+                done({ suggestions: [] }); // Provide empty array on error
+            });
+        },
+        onSelect: function (suggestion) {
+            handleAutocompleteSelect(suggestion);
+        },
+        // Making the suggestions clickable and using the movie ID for redirection
+        // The library usually creates <a> tags or similar; this ensures the 'data' (movieId) is used.
+        // formatResult: function (suggestion, currentValue) {
+        //    return suggestion.value; // Display movie title
+        // },
+        // The library by default should handle keyboard navigation (up/down arrows) and highlighting. [cite: 363]
+        // The text in the search box should change to the entry's content on navigation. [cite: 364]
+        // This is often a built-in feature of the library.
+
+        // Prevent form submission when Enter is pressed on a suggestion, as onSelect handles it.
+        // However, if Enter is pressed without a selection, the form should submit.
+        // The library might handle this by default, or you might need to add logic.
+        // By default, if onSelect is defined, pressing Enter on a selected item triggers onSelect
+        // and often prevents default form submission for that action.
+        triggerSelectOnValidInput: false // Important: prevent auto-selection if text matches a suggestion exactly
+        // We want user to explicitly select or press enter on the form.
+    });
+
+    // Handle form submission for full-text search (if no suggestion is selected)
+    // Requirement: If the customer just presses "Enter" Key or clicks the search button without selecting any suggestion entry,
+    // it should perform the same full-text search action. [cite: 366]
+    // This is the default behavior of the HTML form, so no extra JS is strictly needed for this part unless
+    // the autocomplete library interferes with it. The `devbridge/jQuery-Autocomplete` usually plays well.
+
+    // --- Existing JavaScript for genres and alpha list ---
+    fetch('genres')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok for genres');
@@ -52,10 +132,9 @@
         })
         .then(genres => {
             const ul = document.getElementById('genre-list');
-            if (ul) { // Check if the element exists
+            if (ul) {
                 genres.forEach(genreName => {
                     const li = document.createElement('li');
-                    // Links point to BrowseServlet for genre Browse
                     li.innerHTML = `<a href="browse?genre=${encodeURIComponent(genreName)}">${genreName}</a>`;
                     ul.appendChild(li);
                 });
@@ -69,14 +148,12 @@
             if (ul) ul.innerHTML = '<li>Could not load genres.</li>';
         });
 
-    // build 0–9, A–Z + "*" browse buttons
     const alpha = ['*', ...'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
     const alphaUl = document.getElementById('alpha-list');
 
-    if (alphaUl) { // Check if the element exists
+    if (alphaUl) {
         alpha.forEach(character => {
             const li = document.createElement('li');
-            // Links point to BrowseServlet for letter Browse
             li.innerHTML = `<a href="browse?letter=${encodeURIComponent(character)}">${character}</a>`;
             alphaUl.appendChild(li);
         });

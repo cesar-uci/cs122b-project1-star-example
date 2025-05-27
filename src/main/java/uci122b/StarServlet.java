@@ -25,7 +25,7 @@ public class StarServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             Context init = new InitialContext();
-            ds = (DataSource) init.lookup("java:comp/env/jdbc/moviedb");
+            ds = (DataSource) init.lookup("java:comp/env/jdbc/moviedb_slave");
         } catch (Exception e) {
             throw new ServletException("DataSource lookup failed in StarServlet", e);
         }

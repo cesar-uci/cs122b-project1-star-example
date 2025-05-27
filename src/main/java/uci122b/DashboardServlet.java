@@ -1,9 +1,6 @@
-package uci122b;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -13,16 +10,10 @@ import java.util.*;
 
 @WebServlet(name="DashboardServlet", urlPatterns="/_dashboard")
 public class DashboardServlet extends HttpServlet {
-    private DataSource ds;
 
     @Override
     public void init() throws ServletException {
-        try {
-            ds = (DataSource) new InitialContext()
-                    .lookup("java:comp/env/jdbc/moviedb");
-        } catch (NamingException e) {
-            throw new ServletException("Datasource lookup failed", e);
-        }
+        System.out.println("DashboardServlet: Initialized");
     }
 
     @Override
@@ -37,10 +28,17 @@ public class DashboardServlet extends HttpServlet {
             return;
         }
 
-        Map<String,List<String>> schema = new LinkedHashMap<>();
-        try (Connection conn = ds.getConnection()) {
-            DatabaseMetaData md = conn.getMetaData();
+        DataSource ds_slave;
+        try {
+            ds_slave = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb_slave");
+            System.out.println("DashboardServlet (doGet): Using jdbc/moviedb_slave for metadata");
+        } catch (NamingException e) {
+            throw new ServletException("Datasource lookup failed for slave in DashboardServlet.doGet", e);
+        }
 
+        Map<String,List<String>> schema = new LinkedHashMap<>();
+        try (Connection conn = ds_slave.getConnection()) { // Use slave
+            DatabaseMetaData md = conn.getMetaData();
             try (ResultSet tables = md.getTables(null, null, "%", new String[]{"TABLE"})) {
                 while (tables.next()) {
                     String tableName = tables.getString("TABLE_NAME");
@@ -71,13 +69,21 @@ public class DashboardServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         String action = req.getParameter("action");
 
-        // --- Employee login POST ---
+        DataSource ds_to_use;
+
         if ("login".equals(action)) {
+            try {
+                ds_to_use = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb_slave");
+                System.out.println("DashboardServlet (doPost-login): Using jdbc/moviedb_slave");
+            } catch (NamingException e) {
+                throw new ServletException("Datasource lookup failed for slave in DashboardServlet.doPost(login)", e);
+            }
+
             String email = req.getParameter("email");
             String pw    = req.getParameter("password");
             if (email != null && pw != null) {
                 String sql = "SELECT password FROM employees WHERE email=?";
-                try (Connection conn = ds.getConnection();
+                try (Connection conn = ds_to_use.getConnection(); // Use slave
                      PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, email);
                     try (ResultSet rs = ps.executeQuery()) {
@@ -93,20 +99,24 @@ public class DashboardServlet extends HttpServlet {
             return;
         }
 
-        //  must be logged in for all further actions
         if (session == null || session.getAttribute("empEmail") == null) {
             resp.sendRedirect(req.getContextPath() + "/_dashboard");
             return;
         }
 
-        // --- Add Star ---
+        try {
+            ds_to_use = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb_master");
+            System.out.println("DashboardServlet (doPost-writes): Using jdbc/moviedb_master");
+        } catch (NamingException e) {
+            throw new ServletException("Datasource lookup failed for master in DashboardServlet.doPost(writes)", e);
+        }
+
         if ("addStar".equals(action)) {
             String name = req.getParameter("starName");
             String by   = req.getParameter("birthYear");
             String insert = "INSERT INTO stars (id,name,birthYear) VALUES (?, ?, ?)";
 
-            try (Connection conn = ds.getConnection()) {
-                // generate new star ID
+            try (Connection conn = ds_to_use.getConnection()) { // Use master
                 String newId;
                 try (Statement s = conn.createStatement();
                      ResultSet rs = s.executeQuery(
@@ -130,12 +140,10 @@ public class DashboardServlet extends HttpServlet {
             } catch (Exception e) {
                 throw new ServletException(e);
             }
-
             resp.sendRedirect(req.getContextPath() + "/_dashboard");
             return;
         }
 
-        // --- Call add_movie stored procedure ---
         if ("addMovie".equals(action)) {
             String title = req.getParameter("title");
             String yearStr = req.getParameter("year");
@@ -143,7 +151,7 @@ public class DashboardServlet extends HttpServlet {
             String star = req.getParameter("star");
             String genre = req.getParameter("genre");
 
-            try (Connection conn = ds.getConnection();
+            try (Connection conn = ds_to_use.getConnection(); // Use master
                  CallableStatement cs = conn.prepareCall("{CALL add_movie(?,?,?,?,?,?)}")) {
 
                 cs.setString(1, title);
@@ -159,7 +167,6 @@ public class DashboardServlet extends HttpServlet {
             } catch (Exception e) {
                 throw new ServletException(e);
             }
-
             resp.sendRedirect(req.getContextPath() + "/_dashboard");
         }
     }

@@ -5,7 +5,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -17,20 +16,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.google.gson.Gson;
 
 @WebServlet(name = "GenreServlet", urlPatterns = "/genres")
 public class GenreServlet extends HttpServlet {
-    private DataSource ds;
+    private DataSource ds; // This will now be for the slave
 
     @Override
     public void init() throws ServletException {
         try {
             Context init = new InitialContext();
-            ds = (DataSource) init.lookup("java:comp/env/jdbc/moviedb");
+            // Use the SLAVE for reading genres
+            ds = (DataSource) init.lookup("java:comp/env/jdbc/moviedb_slave");
+            System.out.println("GenreServlet: Initialized with jdbc/moviedb_slave");
         } catch (Exception e) {
-            throw new ServletException("DataSource lookup failed in GenreServlet", e);
+            System.err.println("GenreServlet: Failed to lookup DataSource (jdbc/moviedb_slave): " + e.getMessage());
+            throw new ServletException("DataSource lookup failed in GenreServlet (slave)", e);
         }
     }
 
@@ -38,14 +39,13 @@ public class GenreServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse resp)
             throws ServletException, IOException {
-        // (Optional) session check here if you require login to view genres
-
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
         List<String> genreList = new ArrayList<>();
         String sql = "SELECT name FROM genres ORDER BY name ASC";
 
+        // ds is now the slave connection pool
         try (Connection conn = ds.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

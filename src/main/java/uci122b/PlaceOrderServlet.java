@@ -1,34 +1,30 @@
 package uci122b;
 
-// Changed javax.* to jakarta.*
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-// javax.naming.* and javax.sql.* remain javax.*
 import javax.naming.Context;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.sql.Statement;
-
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
-import java.time.LocalDate; // Use java.time for dates
+import java.time.LocalDate;
 import java.util.*;
 
 @WebServlet(name = "PlaceOrderServlet", urlPatterns = {"/place-order"})
 public class PlaceOrderServlet extends HttpServlet {
 
-    private DataSource ds; // Cache DataSource
+    private DataSource ds_master; // This will now be for the MASTER
 
     @Override
     public void init() throws ServletException {
         try {
-            ds = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
+            // Use the MASTER for placing orders (writes and critical reads)
+            ds_master = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb_master");
+            System.out.println("PlaceOrderServlet: Initialized with jdbc/moviedb_master");
         } catch (Exception e) {
-            throw new ServletException("DataSource lookup failed in PlaceOrderServlet", e);
+            System.err.println("PlaceOrderServlet: Failed to lookup DataSource (jdbc/moviedb_master): " + e.getMessage());
+            throw new ServletException("DataSource lookup failed in PlaceOrderServlet (master)", e);
         }
     }
 
@@ -37,7 +33,6 @@ public class PlaceOrderServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
 
-        // Authentication Check
         if (session == null || session.getAttribute("userEmail") == null) {
             resp.sendRedirect(req.getContextPath() + "/login?error=unauthorized_order");
             return;
@@ -57,10 +52,9 @@ public class PlaceOrderServlet extends HttpServlet {
         String firstName = req.getParameter("firstName");
         String lastName = req.getParameter("lastName");
         String ccNumber = req.getParameter("ccNumber");
-        String expirationStr = req.getParameter("expiration"); // Expecting YYYY-MM-DD format
+        String expirationStr = req.getParameter("expiration");
 
         System.out.println("PlaceOrderServlet DEBUG: Received raw parameters - firstName: [" + firstName + "], lastName: [" + lastName + "], ccNumber: [" + ccNumber + "], expirationStr: [" + expirationStr + "]");
-
 
         if (firstName == null || firstName.trim().isEmpty() ||
                 lastName == null || lastName.trim().isEmpty() ||
@@ -73,32 +67,29 @@ public class PlaceOrderServlet extends HttpServlet {
 
         java.sql.Date expirationSqlDate;
         try {
-            // Assuming input is YYYY-MM-DD from the HTML date input
             LocalDate expirationLocalDate = LocalDate.parse(expirationStr);
-            // NO FUTURE DATE CHECK - as per your request to match DB data
             expirationSqlDate = java.sql.Date.valueOf(expirationLocalDate);
             System.out.println("PlaceOrderServlet DEBUG: Parsed SQL Expiration Date: [" + expirationSqlDate + "]");
         } catch (Exception e) {
-            System.err.println("PlaceOrderServlet: Invalid expiration date format (expecting YYYY-MM-DD): " + expirationStr + " - " + e.getMessage());
-            forwardToPaymentWithError(req, resp, "Invalid expiration date. Please use YYYY-MM-DD format.");
+            System.err.println("PlaceOrderServlet: Invalid expiration date format (expecting yyyy-MM-dd): " + expirationStr + " - " + e.getMessage());
+            forwardToPaymentWithError(req, resp, "Invalid expiration date. Please use yyyy-MM-dd format.");
             return;
         }
 
         String userEmail = (String) session.getAttribute("userEmail");
-        Connection conn = null;
+        Connection conn = null; // Connection will be from ds_master
         try {
-            conn = ds.getConnection();
+            conn = ds_master.getConnection(); // Use master connection pool
             conn.setAutoCommit(false);
 
-            System.out.println("PlaceOrderServlet DEBUG: Attempting to validate card against DB.");
+            System.out.println("PlaceOrderServlet DEBUG: Attempting to validate card against DB (MASTER).");
 
             String cardSql = "SELECT id FROM creditcards WHERE id=? AND firstName=? AND lastName=? AND expiration=?";
             boolean validCard = false;
             try (PreparedStatement cardStmt = conn.prepareStatement(cardSql)) {
-                // Trim inputs for names, and ensure ccNumber matches DB format (with/without spaces)
                 String trimmedFirstName = firstName.trim();
                 String trimmedLastName = lastName.trim();
-                String processedCcNumber = ccNumber.trim(); // Further processing might be needed if DB has spaces and form doesn't or vice-versa
+                String processedCcNumber = ccNumber.trim();
 
                 cardStmt.setString(1, processedCcNumber);
                 cardStmt.setString(2, trimmedFirstName);
@@ -111,9 +102,9 @@ public class PlaceOrderServlet extends HttpServlet {
                 try (ResultSet rc = cardStmt.executeQuery()) {
                     if (rc.next()) {
                         validCard = true;
-                        System.out.println("PlaceOrderServlet DEBUG: Card VALIDATED successfully in DB.");
+                        System.out.println("PlaceOrderServlet DEBUG: Card VALIDATED successfully in DB (MASTER).");
                     } else {
-                        System.out.println("PlaceOrderServlet DEBUG: Card validation FAILED - no matching record found in DB.");
+                        System.out.println("PlaceOrderServlet DEBUG: Card validation FAILED - no matching record found in DB (MASTER).");
                     }
                 }
             }
@@ -142,7 +133,7 @@ public class PlaceOrderServlet extends HttpServlet {
                 }
             }
 
-            if (customerId == -1) { // Should have been caught above, but as a safeguard
+            if (customerId == -1) {
                 System.err.println("PlaceOrderServlet: Failed to retrieve customer ID for " + userEmail);
                 if (conn != null) conn.rollback();
                 resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error retrieving customer information.");
@@ -177,19 +168,17 @@ public class PlaceOrderServlet extends HttpServlet {
                     resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error saving some order items.");
                     return;
                 }
-                System.out.println("Successfully inserted " + successfulInserts + " sale records for customer ID " + customerId);
+                System.out.println("Successfully inserted " + successfulInserts + " sale records for customer ID " + customerId + " (MASTER DB).");
             }
 
             conn.commit();
-            System.out.println("Order placed successfully for user: " + userEmail);
+            System.out.println("Order placed successfully for user: " + userEmail + " (MASTER DB).");
 
             Collection<AddToCartServlet.CartItem> purchasedItems = new ArrayList<>(cart.values());
             req.setAttribute("purchasedItems", purchasedItems);
             req.setAttribute("saleDate", saleDate);
 
             session.removeAttribute(AddToCartServlet.CART_ATTR);
-
-            // Forward to confirmation page located in WEB-INF
             req.getRequestDispatcher("/WEB-INF/confirmation.jsp").forward(req, resp);
 
         } catch (SQLException e) {
@@ -219,7 +208,6 @@ public class PlaceOrderServlet extends HttpServlet {
     private void forwardToPaymentWithError(HttpServletRequest req, HttpServletResponse resp, String errorMessage)
             throws ServletException, IOException {
         req.setAttribute("error", errorMessage);
-        // Path should point to where your payment.jsp is located (inside WEB-INF as per image_6e3483.png)
         req.getRequestDispatcher("/WEB-INF/payment.jsp").forward(req, resp);
     }
 }

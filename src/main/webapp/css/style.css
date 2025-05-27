@@ -366,3 +366,34 @@ body {
     padding: 0.75rem;
     font-size: 1.1rem;
 }
+
+/* Autocomplete suggestions styling */
+.autocomplete-suggestions {
+    border: 1px solid #ddd;
+    background: #FFF;      /* Ensure white background */
+    overflow: auto;       /* Add scroll if list is too long */
+    z-index: 9999;        /* High z-index to make sure it's on top */
+    position: absolute;   /* THIS IS VERY IMPORTANT for overlay */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: for better visual separation */
+    max-height: 250px;    /* Optional: limits height, makes it scrollable */
+    /* width: auto;      Let the library or other rules handle width initially, or set a specific one if needed */
+}
+
+.autocomplete-suggestion {
+    padding: 8px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;       /* Indicates it's clickable */
+    font-size: 0.9rem;     /* Or your preferred size */
+    color: #333;
+}
+
+.autocomplete-selected {
+    background: #f0f0f0;
+}
+
+.autocomplete-suggestions strong {
+    font-weight: bold;    /* Make matched part of text bold */
+    color: #e50914;      /* Fabflix red or other highlight color */
+}

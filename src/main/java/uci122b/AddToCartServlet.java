@@ -141,7 +141,7 @@ public class AddToCartServlet extends HttpServlet {
             resp.sendRedirect(referer);
         } else {
             System.out.println("Redirecting to default movie list.");
-            resp.sendRedirect(req.getContextPath() + "/movie-list"); // Assuming /movie-list is the main movie page
+            resp.sendRedirect(req.getContextPath() + "/movie-list");
         }
     }
 }

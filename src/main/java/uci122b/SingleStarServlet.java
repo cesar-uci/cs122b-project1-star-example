@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -25,16 +24,18 @@ import java.util.Map;
 
 @WebServlet(name = "SingleStarServlet", urlPatterns = "/single-star")
 public class SingleStarServlet extends HttpServlet {
-    private DataSource ds;
+    private DataSource ds; // This will now be for the slave
 
     @Override
     public void init() throws ServletException {
         try {
             Context initCtx = new InitialContext();
-            // JNDI lookup must match your context.xml
-            ds = (DataSource) initCtx.lookup("java:comp/env/jdbc/moviedb");
+            // Use the SLAVE for reading single star details
+            ds = (DataSource) initCtx.lookup("java:comp/env/jdbc/moviedb_slave");
+            System.out.println("SingleStarServlet: Initialized with jdbc/moviedb_slave");
         } catch (Exception e) {
-            throw new ServletException("DataSource lookup failed in SingleStarServlet", e);
+            System.err.println("SingleStarServlet: Failed to lookup DataSource (jdbc/moviedb_slave): " + e.getMessage());
+            throw new ServletException("DataSource lookup failed in SingleStarServlet (slave)", e);
         }
     }
 
@@ -83,6 +84,7 @@ public class SingleStarServlet extends HttpServlet {
                         "WHERE sim.starId = ? " +
                         "ORDER BY m.year DESC, m.title ASC";
 
+        // ds is now the slave connection pool
         try (Connection conn = ds.getConnection()) {
             try (PreparedStatement ps1 = conn.prepareStatement(starSql)) {
                 ps1.setString(1, starId);
@@ -117,12 +119,10 @@ public class SingleStarServlet extends HttpServlet {
             }
             req.setAttribute("moviesByStar", moviesList);
 
-            // 6) Forward to JSP
             RequestDispatcher rd = req.getRequestDispatcher("/WEB-INF/single-star.jsp");
             rd.forward(req, resp);
 
         } catch (SQLException e) {
-            // log and show 500
             e.printStackTrace();
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "A database error occurred while retrieving star details.");

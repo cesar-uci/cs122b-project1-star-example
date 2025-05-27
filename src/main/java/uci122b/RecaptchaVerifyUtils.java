@@ -17,7 +17,6 @@ public class RecaptchaVerifyUtils {
         boolean success;
         double score;
         String action;
-        // … (you can add error‑codes etc. if desired)
     }
 
     /**

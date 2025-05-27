@@ -1,37 +1,34 @@
 package uci122b;
 
-// javax.naming.* and javax.sql.* remain javax.*
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-
-// Changed javax.* to jakarta.*
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import uci122b.util.PasswordUtil;   // ← import our bcrypt helper
+import uci122b.util.PasswordUtil;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
-    private DataSource ds;
+    private DataSource ds; // This will now be for the slave
 
     @Override
     public void init() throws ServletException {
         try {
-            ds = (DataSource) new InitialContext()
-                    .lookup("java:comp/env/jdbc/moviedb");
+            // Use the SLAVE for reading login credentials
+            ds = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb_slave");
+            System.out.println("LoginServlet: Initialized with JNDI resource jdbc/moviedb_slave");
         } catch (NamingException e) {
-            System.err.println("Failed to lookup DataSource: " + e.getMessage());
+            String errorMessage = "LoginServlet: Failed to lookup DataSource (jdbc/moviedb_slave): " + e.getMessage();
+            System.err.println(errorMessage);
             e.printStackTrace();
-            throw new ServletException("Database connection could not be established.", e);
+            throw new ServletException("Database connection (slave) could not be established for LoginServlet.", e);
         }
     }
 
@@ -87,14 +84,14 @@ public class LoginServlet extends HttpServlet {
         String dbPassword = null;
 
         String sql = "SELECT password FROM customers WHERE email=?";
-        try (Connection conn = ds.getConnection();
+        // The 'ds' field is now configured to point to jdbc/moviedb_slave from the init() method
+        try (Connection conn = ds.getConnection(); // This will get a connection from the slave pool
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     dbPassword = rs.getString("password");
-                    // Check against bcrypt hash
                     if (dbPassword != null && PasswordUtil.check(pw, dbPassword)) {
                         validCredentials = true;
                     }
