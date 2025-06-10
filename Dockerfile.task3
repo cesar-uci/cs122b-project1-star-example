@@ -1,0 +1,34 @@
+# Dockerfile for Task 3: Monolithic Fabflix Deployment
+
+# Use a Maven image to build the application
+FROM maven:3.8.4-openjdk-11 AS builder
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the pom.xml file to download dependencies
+COPY pom.xml .
+
+# Copy the rest of the source code
+COPY src ./src
+
+# Build the application, skipping tests. This creates the .war file.
+RUN mvn clean package -DskipTests
+
+# --- Second Stage: Create the final image ---
+
+# Use a Tomcat image for the final application
+FROM tomcat:10.1-jdk11-corretto
+
+# Remove any default applications from Tomcat
+RUN rm -rf /usr/local/tomcat/webapps/*
+
+# Copy the .war file built in the 'builder' stage to Tomcat's webapps directory.
+# The .war file is renamed to ROOT.war to be deployed at the root context path.
+COPY --from=builder /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
+
+# Expose port 8080
+EXPOSE 8080
+
+# Start Tomcat when the container launches
+CMD ["catalina.sh", "run"]

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*, javax.naming.*, javax.sql.DataSource, java.util.*, java.net.URLEncoder, uci122b.Movie" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
@@ -22,19 +22,15 @@
     if (movies == null) {
         movies = new ArrayList<>(); // Initialize to prevent NullPointerExceptions in the loop
     }
-
     int currentPage = (Integer) (request.getAttribute("currentPage") != null ? request.getAttribute("currentPage") : 1);
     int totalPages = (Integer) (request.getAttribute("totalPages") != null ? request.getAttribute("totalPages") : 0);
     int recordsPerPage = (Integer) (request.getAttribute("recordsPerPage") != null ? request.getAttribute("recordsPerPage") : 10);
-
     String q_param  = (String) request.getAttribute("queryString");
     String genre    = (String) request.getAttribute("genreName");
     String letter   = (String) request.getAttribute("letterInitial");
     String currentSortByCombined = (String) request.getAttribute("sortBy"); // e.g., "title_asc"
-
     String formSortBy = "rating"; // Default
     String formSortDir = "desc"; // Default
-
     if (currentSortByCombined != null && !currentSortByCombined.isEmpty()) {
         String[] sortParts = currentSortByCombined.split("_");
         if (sortParts.length == 2) {
@@ -42,22 +38,17 @@
             formSortDir = sortParts[1];
         }
     }
-
     StringBuilder qsBuilder = new StringBuilder();
     if (q_param  != null && !q_param.isEmpty())  qsBuilder.append("q=").append(URLEncoder.encode(q_param,"UTF-8")).append("&");
     if (genre    != null && !genre.isEmpty()) qsBuilder.append("genre=").append(URLEncoder.encode(genre,"UTF-8")).append("&");
     if (letter   != null && !letter.isEmpty()) qsBuilder.append("letter=").append(URLEncoder.encode(letter,"UTF-8")).append("&");
-
     qsBuilder.append("sortBy=").append(formSortBy).append("&");
     qsBuilder.append("sortDir=").append(formSortDir).append("&");
     qsBuilder.append("limit=").append(recordsPerPage).append("&");
     String baseQS = qsBuilder.toString();
-
     boolean hasPreviousPage = currentPage > 1;
     boolean hasNextPage = currentPage < totalPages;
-
-    String errorMessage = (String) request.getAttribute("errorMessage"); // If servlets set any error
-
+    String errorMessage = (String) request.getAttribute("errorMessage");
     DataSource subQueryDs = null;
     try {
         Context initCtx = new InitialContext();
@@ -73,7 +64,7 @@
 <head>
     <meta charset="utf-8">
     <title>Movie List</title>
-    <link rel="stylesheet" href="css/style.css"> <%-- Assuming css/style.css is relative to webapp root --%>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="page-bg">
@@ -87,7 +78,7 @@
 
     <main class="container card">
         <p>
-            <a href="${pageContext.request.contextPath}/index.html" class="back-link">← Back to Main Page</a>
+            <a href="index.html" class="back-link">← Back to Main Page</a>
         </p>
         <% if (errorMessage != null) { %>
         <p class="error"><%= Htmlescape.escape(errorMessage) %></p>
@@ -95,7 +86,6 @@
 
         <div class="controls">
             <form method="GET" action="${ (q_param != null && !q_param.isEmpty()) ? 'search' : ( (genre != null && !genre.isEmpty()) || (letter != null && !letter.isEmpty()) ? 'browse' : 'search' ) }" class="controls-form">
-                <%-- Hidden fields to retain original search/browse criteria --%>
                 <c:if test="${not empty param.q}"> <input type="hidden" name="q" value="${fn:escapeXml(param.q)}"/></c:if>
                 <c:if test="${not empty param.genre && empty param.q}"><input type="hidden" name="genre" value="${fn:escapeXml(param.genre)}"/></c:if>
                 <c:if test="${not empty param.letter && empty param.q}"><input type="hidden" name="letter" value="${fn:escapeXml(param.letter)}"/></c:if>
@@ -113,7 +103,7 @@
                 </select>
 
                 <label for="pageSizeSelect">Show:</label>
-                <select name="limit" id="pageSizeSelect"> <%-- Changed name to "limit" --%>
+                <select name="limit" id="pageSizeSelect">
                     <option value="10"  <%= recordsPerPage == 10  ? "selected" : "" %>>10</option>
                     <option value="25"  <%= recordsPerPage == 25  ? "selected" : "" %>>25</option>
                     <option value="50"  <%= recordsPerPage == 50  ? "selected" : "" %>>50</option>
@@ -135,9 +125,8 @@
                         String mTitle  = movie.getTitle();
                         int    mYear   = movie.getYear();
                         String mDir    = movie.getDirector();
-                        float  mRating = movie.getRating(); // MovieListService sets -1.0f for N/A
-                        double mPrice  = 9.99; // Hardcoded as in original
-
+                        float  mRating = movie.getRating();
+                        double mPrice  = 9.99;
                         List<String> gList = new ArrayList<>();
                         List<Map<String, String>> sList = new ArrayList<>();
 
@@ -207,7 +196,7 @@
                             </p>
                         </div>
                     </li>
-                    <% } // End of for each movie loop %>
+                    <% } %>
                 </ul>
             </c:when>
         </c:choose>

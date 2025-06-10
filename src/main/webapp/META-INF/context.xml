@@ -1,38 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <Context>
-    <WatchedResource>WEB-INF/web.xml</WatchedResource>
-    <WatchedResource>META-INF/context.xml</WatchedResource>
+    <Resource name="jdbc/moviedb" auth="Container" type="javax.sql.DataSource"
+              maxTotal="100" maxIdle="30" maxWaitMillis="10000"
+              username="murphyuser" password="your_password" driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://mysql:3306/moviedb?allowPublicKeyRetrieval=true&amp;useSSL=false&amp;autoReconnect=true"/>
 
-    <Resource name="jdbc/moviedb_master"
-              auth="Container"
-              type="javax.sql.DataSource"
-              driverClassName="com.mysql.cj.jdbc.Driver"
-              url="jdbc:mysql://${MYSQL_MASTER_HOST}:3306/${MYSQL_DB_NAME}?allowPublicKeyRetrieval=true&amp;useSSL=false&amp;serverTimezone=UTC&amp;cachePrepStmts=true&amp;prepStmtCacheSize=250&amp;prepStmtCacheSqlLimit=2048"
-              username="${MYSQL_USERNAME}"
-              password="${MYSQL_PASSWORD}"
-              maxTotal="100"
-              maxIdle="30"
-              maxWaitMillis="10000"
-              validationQuery="SELECT 1"
-              testOnBorrow="true"
-              testWhileIdle="true"
-              removeAbandonedOnBorrow="true"
-              removeAbandonedTimeout="60"
-              logAbandoned="true" />
+    <Resource name="jdbc/moviedb_master" auth="Container" type="javax.sql.DataSource"
+              maxTotal="100" maxIdle="30" maxWaitMillis="10000"
+              username="murphyuser" password="your_password" driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://mysql:3306/moviedb?allowPublicKeyRetrieval=true&amp;useSSL=false&amp;autoReconnect=true"/>
 
-    <Resource name="jdbc/moviedb_slave"
-              auth="Container"
-              type="javax.sql.DataSource"
-              driverClassName="com.mysql.cj.jdbc.Driver"
-              url="jdbc:mysql://${MYSQL_SLAVE_HOST}:3306/${MYSQL_DB_NAME}?allowPublicKeyRetrieval=true&amp;useSSL=false&amp;serverTimezone=UTC&amp;cachePrepStmts=true&amp;prepStmtCacheSize=250&amp;prepStmtCacheSqlLimit=2048"
-              username="${MYSQL_USERNAME}"
-              password="${MYSQL_PASSWORD}"
-              maxTotal="100"
-              maxIdle="30"
-              maxWaitMillis="10000"
-              validationQuery="SELECT 1"
-              testOnBorrow="true"
-              testWhileIdle="true"
-              removeAbandonedOnBorrow="true"
-              removeAbandonedTimeout="60"
-              logAbandoned="true" />
+    <Resource name="jdbc/moviedb_slave" auth="Container" type="javax.sql.DataSource"
+              maxTotal="100" maxIdle="30" maxWaitMillis="10000"
+              username="murphyuser" password="your_password" driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://mysql:3306/moviedb?allowPublicKeyRetrieval=true&amp;useSSL=false&amp;autoReconnect=true"/>
 </Context>

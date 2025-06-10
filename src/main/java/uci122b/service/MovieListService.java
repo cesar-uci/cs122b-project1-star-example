@@ -16,29 +16,28 @@ import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class MovieListService {
-
     private DataSource dataSource;
 
+    // Custom Exception class for clarity
+    public static class ServletException extends Exception {
+        public ServletException(String message, Throwable cause) { super(message, cause); }
+        public ServletException(String message) { super(message); }
+    }
+
+    // Constructor with detailed logging
     public MovieListService() throws ServletException {
+        System.out.println("DIAGNOSTIC: MovieListService constructor called.");
         try {
+            System.out.println("DIAGNOSTIC: Attempting JNDI lookup for 'java:comp/env/jdbc/moviedb_slave'");
             Context initCtx = new InitialContext();
             this.dataSource = (DataSource) initCtx.lookup("java:comp/env/jdbc/moviedb_slave");
-            System.out.println("MovieListService: Initialized with JNDI resource jdbc/moviedb_slave");
+            System.out.println("DIAGNOSTIC: JNDI lookup SUCCEEDED. DataSource is ready.");
         } catch (NamingException e) {
-            System.err.println("MovieListService: Failed to lookup DataSource (jdbc/moviedb_slave): " + e.getMessage());
+            System.err.println("DIAGNOSTIC: JNDI lookup FAILED for 'jdbc/moviedb_slave'. This is the root cause of the error.");
+            e.printStackTrace(System.err);
             throw new ServletException("DataSource lookup failed in MovieListService for jdbc/moviedb_slave", e);
         }
     }
-
-    public static class ServletException extends Exception {
-        public ServletException(String message, Throwable cause) {
-            super(message, cause);
-        }
-        public ServletException(String message) {
-            super(message);
-        }
-    }
-
 
     public List<Movie> findMovies(HttpServletRequest request) {
         List<Movie> movies = new ArrayList<>();

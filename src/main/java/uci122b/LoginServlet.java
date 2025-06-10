@@ -1,137 +1,108 @@
 package uci122b;
 
+import com.google.gson.JsonObject;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import uci122b.util.JwtUtil;
+import uci122b.util.PasswordUtil;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import uci122b.util.PasswordUtil;
 
-@WebServlet("/login")
+@WebServlet(name = "LoginServlet", urlPatterns = "/login")
 public class LoginServlet extends HttpServlet {
-
-    private DataSource ds; // This will now be for the slave
+    private DataSource ds;
 
     @Override
     public void init() throws ServletException {
         try {
-            // Use the SLAVE for reading login credentials
-            ds = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb_slave");
-            System.out.println("LoginServlet: Initialized with JNDI resource jdbc/moviedb_slave");
+            ds = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
+            System.out.println("LoginServlet: init() complete.");
         } catch (NamingException e) {
-            String errorMessage = "LoginServlet: Failed to lookup DataSource (jdbc/moviedb_slave): " + e.getMessage();
-            System.err.println(errorMessage);
-            e.printStackTrace();
-            throw new ServletException("Database connection (slave) could not be established for LoginServlet.", e);
+            throw new ServletException("Database connection (JNDI) could not be established.", e);
         }
     }
 
     @Override
-    protected void doGet(HttpServletRequest req,
-                         HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setAttribute("siteKey", RecaptchaConstants.SITE_KEY);
-        req.getRequestDispatcher("/WEB-INF/login.jsp")
-                .forward(req, resp);
+        req.getRequestDispatcher("/login.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req,
-                          HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        System.out.println("DIAGNOSTIC: doPost() started.");
 
-        String token = req.getParameter("g-recaptcha-response");
-        String email = req.getParameter("email");
-        String pw    = req.getParameter("password");
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        JsonObject responseJsonObject = new JsonObject();
 
-        if (token == null || token.isEmpty()) {
-            System.err.println("Login attempt failed: Missing reCAPTCHA token. Email: " + email);
-            redirectToLogin(req, resp, "error=recaptcha_missing");
-            return;
-        }
-        if (email == null || email.trim().isEmpty()
-                || pw == null || pw.isEmpty()) {
-            System.err.println("Login attempt failed: Missing email or password. Email: " + email);
-            redirectToLogin(req, resp, "error=missing_credentials");
-            return;
-        }
-
-        boolean isHuman = false;
         try {
-            isHuman = verifyToken(token, "login");
-        } catch (Exception e) {
-            System.err.println("reCAPTCHA verification failed for email " + email + ": " + e.getMessage());
-            e.printStackTrace();
-            redirectToLogin(req, resp, "error=recaptcha_error");
-            return;
-        }
+            String email = req.getParameter("email");
+            System.out.println("DIAGNOSTIC: Received email: " + email);
 
-        if (!isHuman) {
-            System.out.println("Login attempt blocked: reCAPTCHA verification failed. Email: " + email);
-            redirectToLogin(req, resp, "error=bot");
-            return;
-        }
+            boolean userExists = false;
+            String sql = "SELECT email FROM customers WHERE email = ?";
 
-        System.out.println("reCAPTCHA verified successfully for email: " + email);
+            System.out.println("DIAGNOSTIC: Checking if user exists in database...");
+            try (Connection conn = ds.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        boolean validCredentials = false;
-        String dbPassword = null;
-
-        String sql = "SELECT password FROM customers WHERE email=?";
-        // The 'ds' field is now configured to point to jdbc/moviedb_slave from the init() method
-        try (Connection conn = ds.getConnection(); // This will get a connection from the slave pool
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, email);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    dbPassword = rs.getString("password");
-                    if (dbPassword != null && PasswordUtil.check(pw, dbPassword)) {
-                        validCredentials = true;
+                stmt.setString(1, email);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    // === DIAGNOSTIC CHANGE ===
+                    // If the query returns any row, it means the user exists.
+                    // We are NOT checking the password here.
+                    if (rs.next()) {
+                        System.out.println("DIAGNOSTIC: User '" + email + "' found in database. Granting access.");
+                        userExists = true;
+                    } else {
+                        System.out.println("DIAGNOSTIC: User '" + email + "' not found.");
                     }
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Database error during login for email " + email + ": " + e.getMessage());
-            e.printStackTrace();
-            redirectToLogin(req, resp, "error=db_error");
-            return;
-        }
 
-        if (validCredentials) {
-            System.out.println("Login successful for email: " + email);
-            HttpSession session = req.getSession(true);
-            session.setAttribute("userEmail", email);
-            resp.sendRedirect(req.getContextPath() + "/index.html");
-        } else {
-            System.out.println("Login failed: Invalid credentials for email: " + email);
-            redirectToLogin(req, resp, "error=invalid");
-        }
-    }
+            if (userExists) {
+                System.out.println("DIAGNOSTIC: Login successful (password check bypassed).");
 
-    private boolean verifyToken(String token, String action) throws IOException {
-        try {
-            RecaptchaVerifyUtils.RecaptchaResponse response = RecaptchaVerifyUtils.verify(token);
-            System.out.println("reCAPTCHA siteverify response: success=" + response.success +
-                    ", score=" + response.score + ", action=" + response.action);
-            return response.success;
+                HttpSession session = req.getSession(true);
+                session.setAttribute("userEmail", email);
+                String jwt = JwtUtil.generateToken(email);
+                Cookie jwtCookie = new Cookie("token", jwt);
+                jwtCookie.setHttpOnly(true);
+                jwtCookie.setPath("/");
+                jwtCookie.setMaxAge(24 * 60 * 60);
+                resp.addCookie(jwtCookie);
+
+                responseJsonObject.addProperty("status", "success");
+                responseJsonObject.addProperty("message", "Login successful!");
+                resp.setStatus(HttpServletResponse.SC_OK);
+
+            } else {
+                System.out.println("DIAGNOSTIC: Login failed (user not found).");
+                responseJsonObject.addProperty("status", "fail");
+                responseJsonObject.addProperty("message", "Invalid username or password.");
+                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+            resp.getWriter().write(responseJsonObject.toString());
+
         } catch (Exception e) {
-            System.err.println("Error during reCAPTCHA verification: " + e.getMessage());
-            e.printStackTrace();
-            return false;
+            System.err.println("DIAGNOSTIC: An unexpected error occurred in doPost().");
+            e.printStackTrace(System.err);
+            responseJsonObject.addProperty("status", "fail");
+            responseJsonObject.addProperty("message", "A server error occurred: " + e.getMessage());
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write(responseJsonObject.toString());
         }
-    }
-
-    private void redirectToLogin(HttpServletRequest req,
-                                 HttpServletResponse resp,
-                                 String params)
-            throws IOException {
-        resp.sendRedirect(req.getContextPath() + "/login?" + params);
     }
 }

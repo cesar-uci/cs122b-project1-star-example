@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fabflix
+  labels:
+    app: fabflix
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fabflix
+  template:
+    metadata:
+      labels:
+        app: fabflix
+    spec:
+      # --- THIS IS THE FIX ---
+      # This block tells the pods to use your Docker Hub credentials
+      imagePullSecrets:
+      - name: regcred
+      # ---------------------
+      containers:
+      - name: fabflix-container
+        # Use your latest, corrected image tag
+        image: cesarg11/fabflix:v29
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fabflix
+spec:
+  selector:
+    app: fabflix
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080

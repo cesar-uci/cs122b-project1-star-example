@@ -21,6 +21,6 @@ public class RemoveFromCartServlet extends HttpServlet {
         if (cart != null) {
             cart.remove(req.getParameter("movieId"));
         }
-        resp.sendRedirect("shopping-cart.jsp");
+        resp.sendRedirect(req.getContextPath() + "/shopping-cart.jsp");
     }
 }
